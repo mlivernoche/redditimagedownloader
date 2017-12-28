@@ -1,0 +1,23 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.27130.2010
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{888888A0-9F3D-457C-B088-3A5042F75D52}") = "redditimagedownloader", "redditimagedownloader\redditimagedownloader.pyproj", "{FAC324DA-D72D-4C46-A630-3DF85347C27E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FAC324DA-D72D-4C46-A630-3DF85347C27E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FAC324DA-D72D-4C46-A630-3DF85347C27E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {5F41B715-24B2-41F5-A0A0-2138DA5B168D}
+	EndGlobalSection
+EndGlobal
