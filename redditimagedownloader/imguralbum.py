@@ -1,7 +1,5 @@
 #!/usr/bin/env python3
 # encoding: utf-8
-
-
 """
 imguralbum.py - Download a whole imgur album in one go.
 Provides both a class and a command line utility in a single script
@@ -17,7 +15,9 @@ Modifications by Matthew Livernoche <mattalivernoche@gmail.com>
 
 import sys
 import re
-import urllib.request, urllib.parse, urllib.error
+import urllib.request
+import urllib.parse
+import urllib.error
 import os
 import math
 from collections import Counter
@@ -52,13 +52,15 @@ class ImgurAlbumDownloader:
         self.complete_callbacks = []
 
         # Check the URL is actually imgur:
-        # Just make sure the URL provided points to imgur. See below for why.
+        # Just make sure the URL provided points to imgur.  See below for why.
         match = re.match("(https?)\:\/\/(www\.)?(?:m\.)?imgur\.com\/([a-zA-Z0-9/]+)?", album_url)
         if match == None:
             raise ImgurAlbumException("URL {0} must be a valid Imgur Album".format(album_url))
 
-        # Because imgur can take imgur.com/a/{albumkey} and imgur.com/{albumkey}, do not use the regex match
-        # to find the album key. Just get the last piece of text after the final forward slash.
+        # Because imgur can take imgur.com/a/{albumkey} and
+        # imgur.com/{albumkey}, do not use the regex match
+        # to find the album key.  Just get the last piece of text after the
+        # final forward slash.
         self.protocol = album_url.split(":")[0]
         self.album_key = album_url.split("/")[-1]
 
@@ -74,7 +76,8 @@ class ImgurAlbumDownloader:
 
         if not self.response or self.response.getcode() != 200:
 
-            # apperantly, sometimes imgur.com/a/{key} will NOT work but imgur.com/a/{key} WILL work...
+            # apperantly, sometimes imgur.com/a/{key} will NOT work but
+            # imgur.com/a/{key} WILL work...
             try:
                 newurl = "https://imgur.com/" + self.album_key
                 newresponse = urllib.request.urlopen(url=newurl)
@@ -91,7 +94,8 @@ class ImgurAlbumDownloader:
         # Read in the images now so we can get stats and stuff:
         html = self.response.read().decode('utf-8')
 
-        # just doing re.findall is giving duplicates for albums with one image. iterate through the images found and only get unique ones.
+        # just doing re.findall is giving duplicates for albums with one image.
+        # iterate through the images found and only get unique ones.
         listedimages = re.findall('.*?{"hash":"([a-zA-Z0-9]+)".*?"ext":"(\.[a-zA-Z0-9]+)".*?', html)
         self.imageIDs = []
         foundimages = []
@@ -161,14 +165,14 @@ class ImgurAlbumDownloader:
         if not os.path.exists(albumFolder):
             os.makedirs(albumFolder)
 
+        imagesdownloaded = 0
+
         # And finally loop through and save the images:
         for (counter, image) in enumerate(self.imageIDs, start=1):
-            image_url = "http://i.imgur.com/"+image[0]+image[1]
+            image_url = "http://i.imgur.com/" + image[0] + image[1]
 
-            prefix = "%0*d-" % (
-                int(math.ceil(math.log(len(self.imageIDs) + 1, 10))),
-                counter
-            )
+            prefix = "%0*d-" % (int(math.ceil(math.log(len(self.imageIDs) + 1, 10))), counter)
+            if len(self.imageIDs) == 1: prefix = ""
             path = os.path.join(albumFolder, prefix + image[0] + image[1])
 
             # Run the callbacks:
@@ -177,17 +181,21 @@ class ImgurAlbumDownloader:
 
             # Actually download the thing
             if os.path.isfile(path):
-                print ("Skipping, already exists.")
+                print("Skipping, already exists.")
             else:
                 try:
                     urllib.request.urlretrieve(image_url, path)
+                    imagesdownloaded += 1
                 except:
-                    print ("Download failed.")
+                    print("Download failed.")
+                    imagesdownloaded -= 1
                     os.remove(path)
 
         # Run the complete callbacks:
         for fn in self.complete_callbacks:
             fn()
+
+        return imagesdownloaded
 
 
 if __name__ == '__main__':
@@ -195,7 +203,7 @@ if __name__ == '__main__':
 
     if len(args) == 1:
         # Print out the help message and exit:
-        print (help_message)
+        print(help_message)
         exit()
 
     try:
@@ -215,8 +223,8 @@ if __name__ == '__main__':
 
         # Called when the downloads are all done.
         def all_done():
-            print ("")
-            print ("Done!")
+            print("")
+            print("Done!")
         downloader.on_complete(all_done)
 
         # Work out if we have a foldername or not:
@@ -231,10 +239,10 @@ if __name__ == '__main__':
 
     except ImgurAlbumException as e:
         print(("Error: " + e.msg))
-        print ("")
-        print ("How to use")
-        print ("=============")
-        print (help_message)
+        print("")
+        print("How to use")
+        print("=============")
+        print(help_message)
         exit(1)
 
 

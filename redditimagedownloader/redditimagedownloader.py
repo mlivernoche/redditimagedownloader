@@ -37,10 +37,6 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
         except Exception as e:
             print("Failed to download imgur album for {0}.".format(albumurl))
 
-    def downloadregularimage(imageurl, imagecount, fullimagepath):
-        urllib.request.urlretrieve(imageurl, fullimagepath)
-        print("{0}. ".format(imagecount) + imageurl + " downloaded and saved in " + fullimagepath)
-
     lastthing = ""
 
     # this is the amount of images we have downloaded. this is compared with minimum.
@@ -78,45 +74,21 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 print("{0}. URL is not secure; skipping.".format(imagesconsidered))
                 continue
 
-            file_ext = os.path.splitext(imageurl)[1]
-            filename = os.path.basename(imageurl)
-            fulldirpath = os.path.join(savedir, post["data"]["subreddit"])
-            fullimagepath = os.path.join(fulldirpath, filename)
-
-            if not file_ext in supportedfiletypes:
-
-                # check to see if it is an imgur album.
-                if post["data"]["domain"] == "imgur.com" and "com" in imageurl.split(".")[-1]:
-                    try:
-                        imguralbumdownloader = imguralbum.ImgurAlbumDownloader(imageurl)
-                        print("{0}. {2} is an imgur album with image count of {1}.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
-
-                        downloadalbums = autodownloadalbums
-
-                        if autodownloadalbums == False:
-                            continue_prompt = input("Download album? y/n")
-                            if str(continue_prompt) == "y":
-                                downloadalbums = True
-
-                        if downloadalbums:
-                            print("{0}. Downloading {1} images.".format(imagesconsidered, imguralbumdownloader.num_images()))
-                            imguralbumdownloader.save_images(fulldirpath)
-                        else:
-                            print("{0}. Skipping.".format(imagesconsidered))
-
-                    except Exception as e:
-                        print("Failed to download imgur album for {0}.".format(imageurl))
-                else:
-                    print("{0}. File ext {1} not supported; skipping.".format(imagesconsidered, file_ext))
-
-                continue
-
             if post["data"]["score"] < minimumkarma:
                 print("{0}. Score too low; skipping.".format(imagesconsidered))
                 continue
 
             if post["data"]["stickied"] == True:
                 print("{0}. Stickied post; skipping.".format(imagesconsidered))
+                continue
+
+            file_ext = os.path.splitext(imageurl)[1]
+            filename = os.path.basename(imageurl)
+            fulldirpath = os.path.join(savedir, post["data"]["subreddit"])
+            fullimagepath = os.path.join(fulldirpath, filename)
+
+            if not file_ext in supportedfiletypes and not post["data"]["domain"] == "imgur.com":
+                print("{0}. File ext {1} not supported and not an album; skipping.".format(imagesconsidered, file_ext))
                 continue
 
             if not os.path.exists(fulldirpath):
@@ -127,13 +99,36 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 continue
     
             try:
+
+                imagesdownloadedfromalbum = 0
+
                 if post["data"]["domain"] == "imgur.com" and "com" in imageurl.split(".")[-1]:
-                    downloadimguralbum(imageurl, imagesconsidered, fulldirpath)
+                    try:
+                        imguralbumdownloader = imguralbum.ImgurAlbumDownloader(imageurl)
+                        print("{0}. {2} is an imgur album with image count of {1}.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
+
+                        downloadalbums = autodownloadalbums
+
+                        if autodownloadalbums == False:
+                            continue_prompt = input("Continue? y/n")
+                            if str(continue_prompt) == "y":
+                                downloadalbums = True
+
+                        if downloadalbums:
+                            print("{0}. Scanning {1} images from {2}.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
+                            imagesdownloadedfromalbum = imguralbumdownloader.save_images(fulldirpath)
+                            print("{0}. {1} downloaded from {2}.".format(imagesconsidered, imagesdownloadedfromalbum, imageurl))
+                        else:
+                            print("{0}. Skipping from prompt.".format(imagesconsidered))
+
+                    except Exception as e:
+                        
+                        print("Failed to download imgur album for {0}. Error: {1}".format(imageurl, e))
                 else:
                     urllib.request.urlretrieve(imageurl, fullimagepath)
                     print("{0}. ".format(imagesconsidered) + imageurl + " downloaded and saved in " + fullimagepath)
                 
-                imagesdownloaded += 1
+                if imagesdownloadedfromalbum > 0: imagesdownloaded += 1
             except urllib.error.URLError:
                 print("{0}. Connection time out. Skipping.".format(imagesconsidered))
 
