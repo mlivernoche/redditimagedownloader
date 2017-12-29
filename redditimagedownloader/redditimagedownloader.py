@@ -1,10 +1,21 @@
+#!/usr/bin/env python3
+# encoding: utf-8
+
+help_text = """
+redditimagedownloader.py - Mass download images on reddit. Choose the minimum karma, the subreddits,
+and how many to download. Will also download imgur albums.
+Apache License 2.0
+Copyright Matthew Livernoche <mattalivernoche@gmail.com>
+"""
+
+import argparse
 import urllib.request
 import urllib.parse
 import json
 import os
 import imguralbum
 
-def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autodownloadalbums=False, minimum=50, maximum=200):
+def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autodownloadalbums=False, minimum=50, maximum=200, skipafter=10):
     def downloadimguralbum(albumurl, imageid, downloaddirpath):
         try:
             imguralbumdownloader = imguralbum.ImgurAlbumDownloader(albumurl)
@@ -38,7 +49,7 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
     # this is the amount of images we have considered downloading.
     imagesconsidered = 0
 
-    while imagesdownloaded < minimum and imagesconsidered < maximum:
+    while imagesdownloaded < minimum and imagesconsidered < maximum and imagesconsidered - imagesdownloaded < skipafter:
 
         newurl = "https://reddit.com/r/{0}/.json?limit=100".format(sourceurl)
 
@@ -53,7 +64,7 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
 
         for post in jsondata["data"]["children"]:
 
-            if imagesdownloaded >= minimum or imagesconsidered >= maximum:
+            if imagesdownloaded >= minimum or imagesconsidered >= maximum or imagesconsidered - imagesdownloaded >= skipafter:
                 break
 
             imageurl = post["data"]["url"]
@@ -78,12 +89,12 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 if post["data"]["domain"] == "imgur.com" and "com" in imageurl.split(".")[-1]:
                     try:
                         imguralbumdownloader = imguralbum.ImgurAlbumDownloader(imageurl)
-                        print("{0}. {2} is an imgur album with image count of {1}. Album can be downloaded using imguralbum.py.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
+                        print("{0}. {2} is an imgur album with image count of {1}.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
 
                         downloadalbums = autodownloadalbums
 
                         if autodownloadalbums == False:
-                            continue_prompt = input("Continue? y/n")
+                            continue_prompt = input("Download album? y/n")
                             if str(continue_prompt) == "y":
                                 downloadalbums = True
 
@@ -119,38 +130,53 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 if post["data"]["domain"] == "imgur.com" and "com" in imageurl.split(".")[-1]:
                     downloadimguralbum(imageurl, imagesconsidered, fulldirpath)
                 else:
-                    downloadregularimage(imageurl, imagesconsidered, fullimagepath)
+                    urllib.request.urlretrieve(imageurl, fullimagepath)
+                    print("{0}. ".format(imagesconsidered) + imageurl + " downloaded and saved in " + fullimagepath)
                 
                 imagesdownloaded += 1
             except urllib.error.URLError:
-                print("Connection time out. Skipping.")
+                print("{0}. Connection time out. Skipping.".format(imagesconsidered))
+
         print("Images downloaded: {0}/{1}.".format(imagesdownloaded, minimum))
         lastthing = post["data"]["name"]
 
 
 if __name__ == "__main__":
+    
+    parser = argparse.ArgumentParser(description=help_text)
+    parser.add_argument('--subreddits', nargs='*', help='a list of the subreddits to download from.')
+    parser.add_argument('--ext', nargs='*', default=['.jpg', '.png', '.gif', '.jpeg', '.gifv', '.webm', '.mp4'],
+                        help='a file types that can be downloaded. they must begin with a period (".").')
+    parser.add_argument('--auto', action='store_true', default=False,
+                        help='whether or not to download imgur albums automatically.')
+    parser.add_argument('--minkarma', type=int, default=1, help='the minimum amount of karma a post must have for it to be downloaded.')
+    parser.add_argument('--loc', type=str, help='the directory where files and folders will be saved and created.')
+    parser.add_argument('--min', type=int, default=50,
+                        help='the minimum target for the amount of images to be downloaded. once this is hit, downloading will stop.')
+    parser.add_argument('--max', type=int, default=100,
+                        help='the maximum amount of images that will be considered for download. once this is hit, downloading will stop.')
+    parser.add_argument('--skipafter', type=int, default=10,
+                        help='stop scanning subreddit after we have skipped over so many images.')
+
+    results = parser.parse_args()
+
     # image source information
-    minkarma = 1
-    supportedfiletypes = ['.jpg', '.png', '.gif', '.jpeg']
+    skip = results.skipafter
+    minimages = results.min
+    maximages = results.max
+    autodownload = results.auto
+    urllist = results.subreddits
+    minkarma = results.minkarma
+    supportedfiletypes = results.ext
 
     # image saving information
-    savedir = "D:\\Gallery\\downloads"
-
-    urllist = [
-        #"ecchi",
-        #"thighdeology",
-        #"animelegwear",
-        #"ZettaiRyouiki",
-        #"animelegs",
-        #"animeponytails",
-        #"kitsunemimi",
-        #"onetruebiribiri",
-        "reiayanami",
-        #"awwnime",
-        #"OneTrueUiharu",
-        #"tyingherhairup"
-        ]
+    savedir = results.loc
 
     for url in urllist:
-        downloadimages(url, supportedfiletypes, savedir, minimumkarma=minkarma, autodownloadalbums=True, minimum=200, maximum=500)
+        downloadimages(url, supportedfiletypes, savedir,
+                       minimumkarma=minkarma,
+                       autodownloadalbums=autodownload,
+                       minimum=minimages,
+                       maximum=maximages,
+                       skipafter=skip)
 
