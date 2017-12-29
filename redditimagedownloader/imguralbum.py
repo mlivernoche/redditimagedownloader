@@ -171,9 +171,9 @@ class ImgurAlbumDownloader:
         for (counter, image) in enumerate(self.imageIDs, start=1):
             image_url = "http://i.imgur.com/" + image[0] + image[1]
 
-            prefix = "%0*d-" % (int(math.ceil(math.log(len(self.imageIDs) + 1, 10))), counter)
-            if len(self.imageIDs) == 1: prefix = ""
-            path = os.path.join(albumFolder, prefix + image[0] + image[1])
+            suffix = "-%0*d" % (int(math.ceil(math.log(len(self.imageIDs) + 1, 10))), counter)
+            if len(self.imageIDs) == 1: suffix = ""
+            path = os.path.join(albumFolder, self.album_key + suffix + image[1])
 
             # Run the callbacks:
             for fn in self.image_callbacks:

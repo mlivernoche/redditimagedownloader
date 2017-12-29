@@ -99,10 +99,8 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 continue
     
             try:
-
-                imagesdownloadedfromalbum = 0
-
                 if post["data"]["domain"] == "imgur.com" and "com" in imageurl.split(".")[-1]:
+                    imagesdownloadedfromalbum = 0
                     try:
                         imguralbumdownloader = imguralbum.ImgurAlbumDownloader(imageurl)
                         print("{0}. {2} is an imgur album with image count of {1}.".format(imagesconsidered, imguralbumdownloader.num_images(), imageurl))
@@ -124,11 +122,13 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                     except Exception as e:
                         
                         print("Failed to download imgur album for {0}. Error: {1}".format(imageurl, e))
+                    
+                    imagesdownloaded += imagesdownloadedfromalbum
                 else:
                     urllib.request.urlretrieve(imageurl, fullimagepath)
                     print("{0}. ".format(imagesconsidered) + imageurl + " downloaded and saved in " + fullimagepath)
+                    imagesdownloaded += 1
                 
-                if imagesdownloadedfromalbum > 0: imagesdownloaded += 1
             except urllib.error.URLError:
                 print("{0}. Connection time out. Skipping.".format(imagesconsidered))
 
