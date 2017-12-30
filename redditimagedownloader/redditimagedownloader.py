@@ -16,27 +16,6 @@ import os
 import imguralbum
 
 def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autodownloadalbums=False, minimum=50, maximum=200, skipafter=10):
-    def downloadimguralbum(albumurl, imageid, downloaddirpath):
-        try:
-            imguralbumdownloader = imguralbum.ImgurAlbumDownloader(albumurl)
-            print("{0}. {2} is an imgur album with image count of {1}. Album can be downloaded using imguralbum.py.".format(imageid, imguralbumdownloader.num_images(), albumurl))
-
-            downloadalbums = autodownloadalbums
-
-            if autodownloadalbums == False:
-                continue_prompt = input("Continue? y/n")
-                if str(continue_prompt) == "y":
-                    downloadalbums = True
-
-            if downloadalbums:
-                print("{0}. Downloading {1} images.".format(imageid, imguralbumdownloader.num_images()))
-                imguralbumdownloader.save_images(downloaddirpath)
-            else:
-                print("{0}. Skipping.".format(imageid))
-
-        except Exception as e:
-            print("Failed to download imgur album for {0}.".format(albumurl))
-
     lastthing = ""
     prevlastthing = "dummyvalue"
 
