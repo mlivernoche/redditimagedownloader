@@ -38,6 +38,7 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
             print("Failed to download imgur album for {0}.".format(albumurl))
 
     lastthing = ""
+    prevlastthing = "dummyvalue"
 
     # this is the amount of images we have downloaded. this is compared with minimum.
     imagesdownloaded = 0
@@ -45,7 +46,10 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
     # this is the amount of images we have considered downloading.
     imagesconsidered = 0
 
-    while imagesdownloaded < minimum and imagesconsidered < maximum and imagesconsidered - imagesdownloaded < skipafter:
+    while (lastthing != prevlastthing and
+           imagesdownloaded < minimum and
+           imagesconsidered < maximum and
+           imagesconsidered - imagesdownloaded < skipafter):
 
         newurl = "https://reddit.com/r/{0}/.json?limit=100".format(sourceurl)
 
@@ -133,6 +137,7 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
                 print("{0}. Connection time out. Skipping.".format(imagesconsidered))
 
         print("Images downloaded: {0}/{1}.".format(imagesdownloaded, minimum))
+        prevlastthing = lastthing
         lastthing = post["data"]["name"]
 
 
