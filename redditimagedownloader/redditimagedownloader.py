@@ -8,6 +8,7 @@ Apache License 2.0
 Copyright Matthew Livernoche <mattalivernoche@gmail.com>
 """
 
+import sys
 import argparse
 import urllib.request
 import urllib.parse
@@ -158,4 +159,6 @@ if __name__ == "__main__":
                        minimum=minimages,
                        maximum=maximages,
                        skipafter=skip)
+
+    sys.exit(0)
 
