@@ -1,15 +1,13 @@
 #!/usr/bin/env python3
 # encoding: utf-8
 
-help_text = """
-redditimagedownloader.py - Mass download images on reddit. Choose the minimum karma, the subreddits,
+"""redditimagedownloader.py - Mass download images on reddit. Choose the minimum karma, the subreddits,
 and how many to download. Will also download imgur albums.
 Apache License 2.0
 Copyright Matthew Livernoche <mattalivernoche@gmail.com>
 """
 
 import sys
-import argparse
 import urllib.request
 import urllib.parse
 import json
@@ -119,46 +117,3 @@ def downloadimages(sourceurl, supportedfiletypes, savedir, minimumkarma=1, autod
         print("Images downloaded: {0}/{1}.".format(imagesdownloaded, minimum))
         prevlastthing = lastthing
         lastthing = post["data"]["name"]
-
-
-if __name__ == "__main__":
-    
-    parser = argparse.ArgumentParser(description=help_text)
-    parser.add_argument('--subreddits', nargs='*', help='a list of the subreddits to download from.')
-    parser.add_argument('--ext', nargs='*', default=['.jpg', '.png', '.gif', '.jpeg', '.gifv', '.webm', '.mp4'],
-                        help='a file types that can be downloaded. they must begin with a period (".").')
-    parser.add_argument('--auto', action='store_true', default=False,
-                        help='whether or not to download imgur albums automatically.')
-    parser.add_argument('--minkarma', type=int, default=1, help='the minimum amount of karma a post must have for it to be downloaded.')
-    parser.add_argument('--loc', type=str, help='the directory where files and folders will be saved and created.')
-    parser.add_argument('--min', type=int, default=50,
-                        help='the minimum target for the amount of images to be downloaded. once this is hit, downloading will stop.')
-    parser.add_argument('--max', type=int, default=100,
-                        help='the maximum amount of images that will be considered for download. once this is hit, downloading will stop.')
-    parser.add_argument('--skipafter', type=int, default=10,
-                        help='stop scanning subreddit after we have skipped over so many images.')
-
-    results = parser.parse_args()
-
-    # image source information
-    skip = results.skipafter
-    minimages = results.min
-    maximages = results.max
-    autodownload = results.auto
-    urllist = results.subreddits
-    minkarma = results.minkarma
-    supportedfiletypes = results.ext
-
-    # image saving information
-    savedir = results.loc
-
-    for url in urllist:
-        downloadimages(url, supportedfiletypes, savedir,
-                       minimumkarma=minkarma,
-                       autodownloadalbums=autodownload,
-                       minimum=minimages,
-                       maximum=maximages,
-                       skipafter=skip)
-
-    sys.exit(0)
-
